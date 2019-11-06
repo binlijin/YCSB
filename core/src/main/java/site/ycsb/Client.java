@@ -17,6 +17,15 @@
 
 package site.ycsb;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.ConnectionFactory;
+import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.util.Addressing;
+import org.apache.hadoop.hbase.util.Bytes;
 import site.ycsb.measurements.Measurements;
 import site.ycsb.measurements.exporter.MeasurementsExporter;
 import site.ycsb.measurements.exporter.TextMeasurementsExporter;
@@ -28,6 +37,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.management.ManagementFactory;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
@@ -391,6 +401,8 @@ public final class Client {
       try (final TraceScope span = tracer.newScope(CLIENT_EXPORT_MEASUREMENTS_SPAN)) {
         exportMeasurements(props, opsDone, en - st);
       }
+      // Write result to a hbase table
+      writeToHbaseTable(props, opsDone, en - st);
     } catch (IOException e) {
       System.err.println("Could not export measurements, error: " + e.getMessage());
       e.printStackTrace();
@@ -398,6 +410,64 @@ public final class Client {
     }
 
     System.exit(0);
+  }
+
+  private static void writeToHbaseTable(Properties props, int opcount, long runtime) {
+    try {
+      Configuration config = HBaseConfiguration.create();
+      Connection connection = ConnectionFactory.createConnection(config);
+      // TODO
+      final TableName tName = TableName.valueOf("ycsb_result");
+      String family = "cf";
+      String qualifier = "throughput";
+      String qualifierStr = "throughputStr";
+
+      Table currentTable = connection.getTable(tName);
+      long currentTime = System.currentTimeMillis();
+      long pid = getPid();
+      String address = getIpAddress();
+      String resultRow = currentTime + "_" + address + "_" + pid;
+      double throughput = 1000.0 * (opcount) / (runtime);
+      System.err.println(
+          "Write result to hbase table resultRow=" + resultRow + ", throughput=" + throughput);
+      Put put = new Put(Bytes.toBytes(resultRow));
+      put.addColumn(Bytes.toBytes(family), Bytes.toBytes(qualifier), Bytes.toBytes(throughput));
+      put.addColumn(Bytes.toBytes(family), Bytes.toBytes(qualifierStr),
+          Bytes.toBytes(Double.toString(throughput)));
+      currentTable.put(put);
+    } catch (IOException e) {
+      System.err.println("Could not write result to hbase, error: " + e.getMessage());
+      e.printStackTrace();
+      System.exit(-1);
+    }
+  }
+
+  public static Long getPid() {
+    String name = ManagementFactory.getRuntimeMXBean().getName();
+    String[] nameParts = name.split("@");
+    if (nameParts.length == 2) { // 12345@somewhere
+      try {
+        return Long.parseLong(nameParts[0]);
+      } catch (NumberFormatException ex) {
+        System.err.println("Failed to get PID from [" + name + "]" + ex.getMessage());
+      }
+    } else {
+      System.err.println("Don't know how to get PID from [" + name + "]");
+    }
+    return null;
+  }
+
+  /**
+   * @return Some IPv4/IPv6 address available on the current machine that is up, not virtual
+   *         and not a loopback address. Empty array if none can be found or error occurred.
+   */
+  public static String getIpAddress() {
+    try {
+      return Addressing.getIpAddress().getHostAddress();
+    } catch (IOException ex) {
+      System.err.println("Failed to get IP address bytes" + ex.getMessage());
+    }
+    return "";
   }
 
   private static List<ClientThread> initDb(String dbname, Properties props, int threadcount,

@@ -59,6 +59,24 @@ LICENSE file.
       <artifactId>HdrHistogram</artifactId>
       <version>2.1.4</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-shaded-client</artifactId>
+      <version>${hbase12.version}</version>
+    </dependency>
+    <!--
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-client</artifactId>
+      <version>${hbase10.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>jdk.tools</groupId>
+          <artifactId>jdk.tools</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    -->
   </dependencies>
 
   <build>
