@@ -39,6 +39,7 @@ LICENSE file.
       <artifactId>core</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <!--
     <dependency>
       <groupId>site.ycsb</groupId>
       <artifactId>accumulo1.6-binding</artifactId>
@@ -59,11 +60,13 @@ LICENSE file.
       <artifactId>aerospike-binding</artifactId>
       <version>${project.version}</version>
     </dependency>
+    -->
     <dependency>
       <groupId>site.ycsb</groupId>
       <artifactId>asynchbase-binding</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <!--
     <dependency>
       <groupId>site.ycsb</groupId>
       <artifactId>cloudspanner-binding</artifactId>
@@ -109,6 +112,7 @@ LICENSE file.
       <artifactId>googledatastore-binding</artifactId>
       <version>${project.version}</version>
     </dependency>
+    -->
     <dependency>
       <groupId>site.ycsb</groupId>
       <artifactId>hbase098-binding</artifactId>
@@ -134,6 +138,7 @@ LICENSE file.
       <artifactId>hbase20-binding</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <!--
     <dependency>
       <groupId>site.ycsb</groupId>
       <artifactId>ignite-binding</artifactId>
@@ -179,17 +184,18 @@ LICENSE file.
       <artifactId>rest-binding</artifactId>
       <version>${project.version}</version>
     </dependency>
+    -->
     <dependency>
       <groupId>site.ycsb</groupId>
       <artifactId>rocksdb-binding</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <!--
     <dependency>
       <groupId>site.ycsb</groupId>
       <artifactId>tarantool-binding</artifactId>
       <version>${project.version}</version>
     </dependency>
-<!--
     <dependency>
       <groupId>site.ycsb</groupId>
       <artifactId>voldemort-binding</artifactId>
