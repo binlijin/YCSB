@@ -38,6 +38,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
@@ -421,6 +423,8 @@ public final class Client {
       String family = "cf";
       String qualifier = "throughput";
       String qualifierStr = "throughputStr";
+      String dateStr = "date";
+      DateFormat dateTimeformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
       Table currentTable = connection.getTable(tName);
       long currentTime = System.currentTimeMillis();
@@ -434,6 +438,8 @@ public final class Client {
       put.addColumn(Bytes.toBytes(family), Bytes.toBytes(qualifier), Bytes.toBytes(throughput));
       put.addColumn(Bytes.toBytes(family), Bytes.toBytes(qualifierStr),
           Bytes.toBytes(Double.toString(throughput)));
+      put.addColumn(Bytes.toBytes(family), Bytes.toBytes(dateStr),
+          Bytes.toBytes(dateTimeformat.format(new Date(currentTime))));
       currentTable.put(put);
     } catch (IOException e) {
       System.err.println("Could not write result to hbase, error: " + e.getMessage());
